@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Etsy通報">
+<title>Etsy 著作権侵害 通報支援ツール</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=DM+Mono:wght@400;500&display=swap');
+  :root {
+    --ink:#1c1008;--warm:#3d1f0a;--rust:#b5401a;--gold:#c8963e;
+    --cream:#faf6ef;--parchment:#f3ebe0;--border:#d9c8b0;--muted:#8a6a4a;--success:#2d6a3f;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Noto Serif JP',serif;background:var(--cream);color:var(--ink);min-height:100vh;}
+  header{background:var(--warm);padding:14px 20px 12px;border-bottom:3px solid var(--gold);}
+  header .sub{color:var(--gold);font-size:10px;letter-spacing:.25em;text-transform:uppercase;margin-bottom:3px;font-family:'DM Mono',monospace;}
+  header h1{color:#fff;font-size:16px;font-weight:700;line-height:1.3;}
+  .container{max-width:540px;margin:0 auto;padding:20px 16px 48px;}
+
+  .card{border-radius:10px;padding:14px 16px;margin-bottom:14px;font-size:13px;line-height:1.7;border:1px solid var(--border);background:#fff;}
+  .card.info{background:#fff8ee;border-color:#e8c97a;color:#7a4e10;}
+  .card.ok{background:#f0fdf4;border-color:#86efac;color:var(--success);}
+
+  .section{margin-bottom:20px;}
+  .section-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;font-family:'DM Mono',monospace;margin-bottom:8px;}
+
+  label{display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;font-family:'DM Mono',monospace;}
+  input[type=text],input[type=url]{width:100%;border:1.5px solid var(--border);border-radius:8px;padding:10px 12px;font-size:14px;font-family:'Noto Serif JP',serif;background:var(--cream);color:var(--ink);outline:none;transition:border-color .2s;}
+  input:focus{border-color:var(--rust);}
+  .field{margin-bottom:14px;}
+
+  .chk-row{display:flex;align-items:center;gap:10px;padding:7px 0;font-size:13px;color:var(--warm);cursor:pointer;user-select:none;}
+  input[type=checkbox]{width:18px;height:18px;accent-color:var(--rust);cursor:pointer;flex-shrink:0;}
+
+  .btn{width:100%;padding:12px;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Noto Serif JP',serif;transition:opacity .15s,transform .1s;text-align:center;text-decoration:none;display:block;}
+  .btn:active{transform:scale(.98);}
+  .btn:disabled{opacity:.38;cursor:not-allowed;}
+  .btn-primary{background:var(--warm);color:#fff;}
+  .btn-rust{background:var(--rust);color:#fff;}
+  .btn-outline{background:none;border:1.5px solid var(--border);color:var(--muted);}
+  .btn-success{background:var(--success);color:#fff;}
+  .gap{display:flex;flex-direction:column;gap:12px;}
+
+  .search-links{display:flex;flex-direction:column;gap:9px;margin-bottom:14px;}
+  .search-link-btn{display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:9px;border:1.5px solid var(--border);background:#fff;cursor:pointer;text-decoration:none;color:var(--ink);transition:border-color .15s,background .15s;font-family:'Noto Serif JP',serif;}
+  .search-link-btn:hover{border-color:var(--gold);background:#fffdf7;}
+  .search-link-btn .slb-icon{font-size:22px;flex-shrink:0;width:28px;text-align:center;}
+  .search-link-btn .slb-body{flex:1;min-width:0;}
+  .search-link-btn .slb-title{font-size:13px;font-weight:700;margin-bottom:2px;}
+  .search-link-btn .slb-desc{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;}
+  .search-link-btn .slb-arrow{color:var(--muted);font-size:16px;flex-shrink:0;}
+
+  .report-box{font-family:'DM Mono',monospace;font-size:12px;line-height:1.75;background:var(--parchment);border:1.5px solid var(--border);border-radius:8px;padding:14px;white-space:pre-wrap;word-break:break-word;color:var(--ink);max-height:280px;overflow-y:auto;margin-bottom:13px;}
+
+  .step-badge{display:inline-block;background:var(--warm);color:var(--gold);font-size:10px;font-family:'DM Mono',monospace;font-weight:700;padding:2px 8px;border-radius:4px;margin-right:6px;letter-spacing:.05em;}
+
+  .url-preview{font-size:11px;font-family:'DM Mono',monospace;color:var(--muted);word-break:break-all;margin-top:5px;padding:6px 10px;background:#f5efe8;border-radius:6px;display:none;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="sub">Etsy Copyright Reporter</div>
+  <h1>手芸本 著作権侵害 通報支援ツール</h1>
+</header>
+
+<div class="container">
+
+  <div id="step0">
+    <div class="card info">
+      <strong>使い方：</strong><br>
+      ① 書名を入力 → ② NDLかAmazonで本を検索・URLをコピー → ③ 貼り付けて通報文を生成
+    </div>
+
+    <div class="section">
+      <div class="section-title"><span class="step-badge">STEP 1</span>書名を入力</div>
+      <div class="field">
+        <label>📚 書名（日本語・一部でもOK）</label>
+        <input type="text" id="titleInput" placeholder="例：花のフレーム飾り" oninput="onTitleInput()" />
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title"><span class="step-badge">STEP 2</span>本を検索してURLをコピー</div>
+      <div class="search-links">
+        <a id="ndlLink" href="#" target="_blank" class="search-link-btn" onclick="return checkTitle(this)">
+          <span class="slb-icon">📖</span>
+          <span class="slb-body">
+            <div class="slb-title">国立国会図書館サーチ（NDL）</div>
+            <div class="slb-desc">日本の書籍を網羅・最も確実</div>
+          </span>
+          <span class="slb-arrow">↗</span>
+        </a>
+        <a id="amzLink" href="#" target="_blank" class="search-link-btn" onclick="return checkTitle(this)">
+          <span class="slb-icon">🛒</span>
+          <span class="slb-body">
+            <div class="slb-title">Amazon.co.jp</div>
+            <div class="slb-desc">書影・出版社情報も確認できる</div>
+          </span>
+          <span class="slb-arrow">↗</span>
+        </a>
+      </div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.6;">
+        💡 該当する本のページを開いたら、そのURLをコピーしてください。
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title"><span class="step-badge">STEP 3</span>コピーしたURLを貼り付け</div>
+      <div class="field">
+        <label>📎 参照URL（NDL・Amazon・出版社 どれでもOK）</label>
+        <input type="url" id="refUrl" placeholder="https://..." oninput="onUrlInput()" />
+        <div class="url-preview" id="urlPreview"></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">オプション</div>
+      <label class="chk-row">
+        <input type="checkbox" id="aiAltered" />
+        🤖 AIで画像を改変している疑いがある
+      </label>
+      <label class="chk-row">
+        <input type="checkbox" id="multiListing" checked />
+        📋 同じ出品者に複数の違反リストがある
+      </label>
+    </div>
+
+    <button class="btn btn-rust" id="genBtn" onclick="doGenerate()" disabled>
+      通報文を生成 →
+    </button>
+  </div>
+
+  <div id="step1" style="display:none">
+    <div class="card ok">✅ コピーしてEtsyの「この商品を報告」に貼り付けてください。</div>
+    <div class="report-box" id="reportBox"></div>
+    <div class="gap">
+      <button class="btn btn-primary" id="copyBtn" onclick="doCopy()">📋 テキストをコピー</button>
+      <button class="btn btn-outline" onclick="doReset()">🔄 別の書籍を通報する</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function onTitleInput(){
+  const title = document.getElementById('titleInput').value.trim();
+  document.getElementById('ndlLink').href = title
+    ? `https://ndlsearch.ndl.go.jp/search?cs=bib&keyword=${encodeURIComponent(title)}&f-ht=ndl&f-ht=library`
+    : '#';
+  document.getElementById('amzLink').href = title
+    ? `https://www.amazon.co.jp/s?k=${encodeURIComponent(title)}`
+    : '#';
+  updateGenBtn();
+}
+
+function checkTitle(el){
+  if(!document.getElementById('titleInput').value.trim()){
+    alert('まず書名を入力してください。');
+    return false;
+  }
+  return true;
+}
+
+function onUrlInput(){
+  const url = document.getElementById('refUrl').value.trim();
+  const preview = document.getElementById('urlPreview');
+  if(url){
+    preview.style.display = 'block';
+    preview.textContent = `→ ${urlLabel(detectUrlType(url))} として使用`;
+  } else {
+    preview.style.display = 'none';
+  }
+  updateGenBtn();
+}
+
+function updateGenBtn(){
+  document.getElementById('genBtn').disabled = !document.getElementById('refUrl').value.trim();
+}
+
+function detectUrlType(url){
+  if(url.includes('amazon.co.jp')) return 'amazon';
+  if(url.includes('ndl.go.jp'))    return 'ndl';
+  if(url.includes('books.google')) return 'google';
+  return 'publisher';
+}
+
+function urlLabel(type){
+  return {
+    amazon:    'Amazon Japan product page',
+    ndl:       'National Diet Library Search (Japan)',
+    google:    'Google Books',
+    publisher: "Publisher's website",
+  }[type] || 'Reference URL';
+}
+
+function doGenerate(){
+  const url       = document.getElementById('refUrl').value.trim();
+  const aiAltered = document.getElementById('aiAltered').checked;
+  const multi     = document.getElementById('multiListing').checked;
+  if(!url) return;
+
+  const label     = urlLabel(detectUrlType(url));
+  const multiNote = multi ? 'Please note that this seller\'s store appears to contain multiple listings of this nature.\n' : '';
+
+  const report = aiAltered
+    ? `I am reporting a listing that appears to be selling an unauthorized digital copy of a copyrighted Japanese craft book.\nSelling scanned or copied versions of published books without the publisher's permission is a violation of copyright law and Etsy's Intellectual Property Policy.\n${label}: ${url}\n${multiNote}Additionally, the content appears to have been altered using AI tools.\nPlease investigate and remove this listing. Thank you.`
+    : `I am reporting a listing that appears to be selling an unauthorized digital copy of a copyrighted Japanese craft book.\nSelling scanned or copied versions of published books without the publisher's permission is a violation of copyright law and Etsy's Intellectual Property Policy.\n\n${label}: ${url}\n${multiNote}\nPlease investigate and remove this listing. Thank you.`;
+
+  document.getElementById('step0').style.display = 'none';
+  document.getElementById('step1').style.display = '';
+  document.getElementById('reportBox').textContent = report.trim();
+}
+
+async function doCopy(){
+  const text = document.getElementById('reportBox').textContent;
+  try{
+    await navigator.clipboard.writeText(text);
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = '✅ コピーしました！';
+    btn.classList.replace('btn-primary','btn-success');
+    setTimeout(()=>{ btn.textContent='📋 テキストをコピー'; btn.classList.replace('btn-success','btn-primary'); }, 2500);
+  } catch(e){
+    alert('テキストを長押しして手動でコピーしてください。');
+  }
+}
+
+function doReset(){
+  document.getElementById('titleInput').value = '';
+  document.getElementById('refUrl').value = '';
+  document.getElementById('urlPreview').style.display = 'none';
+  document.getElementById('aiAltered').checked = false;
+  document.getElementById('multiListing').checked = true;
+  document.getElementById('genBtn').disabled = true;
+  document.getElementById('ndlLink').href = '#';
+  document.getElementById('amzLink').href = '#';
+  document.getElementById('step0').style.display = '';
+  document.getElementById('step1').style.display = 'none';
+}
+</script>
+</body>
+</html>
