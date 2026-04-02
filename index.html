@@ -182,7 +182,7 @@ function updateGenBtn(){
 }
 
 function detectUrlType(url){
-  if(url.includes('amazon.co.jp')) return 'amazon';
+  if(url.includes('amazon.co.jp') || url.includes('amazon.com') || url.includes('amzn.to') || url.includes('amzn.asia') || url.includes('a.co')) return 'amazon';
   if(url.includes('ndl.go.jp'))    return 'ndl';
   if(url.includes('books.google')) return 'google';
   return 'publisher';
